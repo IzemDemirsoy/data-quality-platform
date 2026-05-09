@@ -1,12 +1,24 @@
 package com.example.rule_management_service.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "rules")
 public class Rule {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String fieldName;
+
+    @Enumerated(EnumType.STRING)
     private RuleType ruleType;
+
     private String ruleValue;
+
     private String errorMessage;
+
     private boolean active;
 
     public Rule() {

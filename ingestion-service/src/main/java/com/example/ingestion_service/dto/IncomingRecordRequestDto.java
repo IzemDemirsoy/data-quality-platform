@@ -1,34 +1,14 @@
 package com.example.ingestion_service.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 public class IncomingRecordRequestDto {
 
-    @NotBlank(message = "Record id cannot be blank")
     private String recordId;
-
-    @NotBlank(message = "Customer id cannot be blank")
     private String customerId;
-
-    @NotBlank(message = "Full name cannot be blank")
     private String fullName;
-
-    @NotBlank(message = "Email cannot be blank")
-    @Email(message = "Email format is invalid")
     private String email;
-
-    @NotBlank(message = "Phone number cannot be blank")
     private String phoneNumber;
-
-    @NotNull(message = "Age cannot be null")
     private Integer age;
-
-    @NotBlank(message = "City cannot be blank")
     private String city;
-
-    @NotBlank(message = "Source cannot be blank")
     private String source;
 
     public IncomingRecordRequestDto() {

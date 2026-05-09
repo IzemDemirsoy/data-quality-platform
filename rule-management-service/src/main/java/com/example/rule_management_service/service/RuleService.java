@@ -2,23 +2,26 @@ package com.example.rule_management_service.service;
 
 import com.example.rule_management_service.dto.RuleRequestDto;
 import com.example.rule_management_service.dto.RuleResponseDto;
-import com.example.rule_management_service.model.Rule;
-import org.springframework.stereotype.Service;
 import com.example.rule_management_service.exception.RuleNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import com.example.rule_management_service.model.Rule;
 import com.example.rule_management_service.model.RuleType;
+import com.example.rule_management_service.repository.RuleRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class RuleService {
 
-    private final List<Rule> rules = new ArrayList<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    private final RuleRepository ruleRepository;
+
+    public RuleService(RuleRepository ruleRepository) {
+        this.ruleRepository = ruleRepository;
+    }
 
     public RuleResponseDto createRule(RuleRequestDto request) {
         Rule rule = new Rule(
-                idGenerator.getAndIncrement(),
+                null,
                 request.getFieldName(),
                 request.getRuleType(),
                 request.getRuleValue(),
@@ -26,30 +29,24 @@ public class RuleService {
                 request.isActive()
         );
 
-        rules.add(rule);
-        return mapToResponse(rule);
+        Rule savedRule = ruleRepository.save(rule);
+        return mapToResponse(savedRule);
     }
 
     public List<RuleResponseDto> getAllRules() {
-        return rules.stream()
+        return ruleRepository.findAll()
+                .stream()
                 .map(this::mapToResponse)
                 .toList();
     }
 
     public RuleResponseDto getRuleById(Long id) {
-        Rule rule = rules.stream()
-                .filter(r -> r.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new RuleNotFoundException("Rule not found with id: " + id));
-
+        Rule rule = findRuleById(id);
         return mapToResponse(rule);
     }
 
     public RuleResponseDto updateRule(Long id, RuleRequestDto request) {
-        Rule rule = rules.stream()
-                .filter(r -> r.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new RuleNotFoundException("Rule not found with id: " + id));
+        Rule rule = findRuleById(id);
 
         rule.setFieldName(request.getFieldName());
         rule.setRuleType(request.getRuleType());
@@ -57,26 +54,63 @@ public class RuleService {
         rule.setErrorMessage(request.getErrorMessage());
         rule.setActive(request.isActive());
 
-        return mapToResponse(rule);
+        Rule updatedRule = ruleRepository.save(rule);
+        return mapToResponse(updatedRule);
     }
 
     public void deleteRule(Long id) {
-        Rule rule = rules.stream()
-                .filter(r -> r.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new RuleNotFoundException("Rule not found with id: " + id));
-
-        rules.remove(rule);
+        Rule rule = findRuleById(id);
+        ruleRepository.delete(rule);
     }
 
     public RuleResponseDto toggleRuleStatus(Long id) {
-        Rule rule = rules.stream()
-                .filter(r -> r.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new RuleNotFoundException("Rule not found with id: " + id));
+        Rule rule = findRuleById(id);
 
         rule.setActive(!rule.isActive());
-        return mapToResponse(rule);
+
+        Rule updatedRule = ruleRepository.save(rule);
+        return mapToResponse(updatedRule);
+    }
+
+    public List<RuleResponseDto> getActiveRules() {
+        return ruleRepository.findByActiveTrue()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public List<RuleResponseDto> getRulesByFieldName(String fieldName) {
+        return ruleRepository.findByFieldNameIgnoreCase(fieldName)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public List<RuleResponseDto> getActiveRulesByFieldName(String fieldName) {
+        return ruleRepository.findByFieldNameIgnoreCaseAndActiveTrue(fieldName)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public List<RuleResponseDto> getRulesByType(String ruleType) {
+        RuleType type;
+
+        try {
+            type = RuleType.valueOf(ruleType.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid rule type: " + ruleType);
+        }
+
+        return ruleRepository.findByRuleType(type)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    private Rule findRuleById(Long id) {
+        return ruleRepository.findById(id)
+                .orElseThrow(() -> new RuleNotFoundException("Rule not found with id: " + id));
     }
 
     private RuleResponseDto mapToResponse(Rule rule) {
@@ -88,33 +122,5 @@ public class RuleService {
                 rule.getErrorMessage(),
                 rule.isActive()
         );
-    }
-    public List<RuleResponseDto> getActiveRules() {
-        return rules.stream()
-                .filter(Rule::isActive)
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    public List<RuleResponseDto> getRulesByFieldName(String fieldName) {
-        return rules.stream()
-                .filter(rule -> rule.getFieldName().equalsIgnoreCase(fieldName))
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    public List<RuleResponseDto> getActiveRulesByFieldName(String fieldName) {
-        return rules.stream()
-                .filter(rule -> rule.getFieldName().equalsIgnoreCase(fieldName))
-                .filter(Rule::isActive)
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    public List<RuleResponseDto> getRulesByType(String ruleType) {
-        return rules.stream()
-                .filter(rule -> rule.getRuleType().name().equalsIgnoreCase(ruleType))
-                .map(this::mapToResponse)
-                .toList();
     }
 }
