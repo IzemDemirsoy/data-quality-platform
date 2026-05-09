@@ -11,6 +11,7 @@
         <module name="rule-management-service" />
         <module name="api-gateway" />
         <module name="reporting-service" />
+        <module name="external-user-collector-service" />
         <module name="valid-data-service" />
         <module name="ingestion-service" />
       </profile>
@@ -20,6 +21,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api-gateway" options="-parameters" />
       <module name="error-tracking-service" options="-parameters" />
+      <module name="external-user-collector-service" options="-parameters" />
       <module name="ingestion-service" options="-parameters" />
       <module name="reporting-service" options="-parameters" />
       <module name="rule-management-service" options="-parameters" />

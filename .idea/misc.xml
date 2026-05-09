@@ -11,6 +11,7 @@
         <option value="$PROJECT_DIR$/error-tracking-service/pom.xml" />
         <option value="$PROJECT_DIR$/rule-management-service/pom.xml" />
         <option value="$PROJECT_DIR$/valid-data-service/pom.xml" />
+        <option value="$PROJECT_DIR$/external-user-collector-service/pom.xml" />
       </list>
     </option>
   </component>
