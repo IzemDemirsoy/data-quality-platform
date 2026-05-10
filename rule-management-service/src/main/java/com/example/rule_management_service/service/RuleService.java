@@ -14,9 +14,11 @@ import java.util.List;
 public class RuleService {
 
     private final RuleRepository ruleRepository;
+    private final RuleEventPublisher ruleEventPublisher;
 
-    public RuleService(RuleRepository ruleRepository) {
+    public RuleService(RuleRepository ruleRepository, RuleEventPublisher ruleEventPublisher) {
         this.ruleRepository = ruleRepository;
+        this.ruleEventPublisher = ruleEventPublisher;
     }
 
     public RuleResponseDto createRule(RuleRequestDto request) {
@@ -30,6 +32,9 @@ public class RuleService {
         );
 
         Rule savedRule = ruleRepository.save(rule);
+
+        ruleEventPublisher.publishRuleChangedEvent("RULE_CREATED", savedRule);
+
         return mapToResponse(savedRule);
     }
 
@@ -55,12 +60,18 @@ public class RuleService {
         rule.setActive(request.isActive());
 
         Rule updatedRule = ruleRepository.save(rule);
+
+        ruleEventPublisher.publishRuleChangedEvent("RULE_UPDATED", updatedRule);
+
         return mapToResponse(updatedRule);
     }
 
     public void deleteRule(Long id) {
         Rule rule = findRuleById(id);
+
         ruleRepository.delete(rule);
+
+        ruleEventPublisher.publishRuleChangedEvent("RULE_DELETED", rule);
     }
 
     public RuleResponseDto toggleRuleStatus(Long id) {
@@ -69,6 +80,9 @@ public class RuleService {
         rule.setActive(!rule.isActive());
 
         Rule updatedRule = ruleRepository.save(rule);
+
+        ruleEventPublisher.publishRuleChangedEvent("RULE_STATUS_CHANGED", updatedRule);
+
         return mapToResponse(updatedRule);
     }
 

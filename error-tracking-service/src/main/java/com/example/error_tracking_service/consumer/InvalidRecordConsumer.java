@@ -42,6 +42,9 @@ public class InvalidRecordConsumer {
             if (message.contains("Age cannot be negative")) {
                 errors.add("Age cannot be negative");
             }
+            if (message.contains("Customer ID cannot be empty")) {
+                errors.add("Customer ID cannot be empty");
+            }
 
             Map<String, Object> originalRecord = new HashMap<>();
             originalRecord.put("rawMessage", message);
